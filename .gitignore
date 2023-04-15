@@ -1,0 +1,7 @@
+# untrack
+node_modules
+.DS_Store
+.vscode
+
+# secrets
+.env
