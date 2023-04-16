@@ -45,13 +45,13 @@ export const Chat = ({ ...props }) => {
     addChat,
     editChat,
     editLastMessage,
-    initiateThread,
+    appendToLastMessage,
     removeChat,
   } = useChat()
   const selectedId = selectedChat?.id,
-    selectedRole = selectedChat?.role,
-    conversationId = selectedChat?.conversationId,
-    parentMessageId = selectedChat?.parentMessageId
+    selectedRole = selectedChat?.role
+    // conversationId = selectedChat?.conversationId,
+    // parentMessageId = selectedChat?.parentMessageId
 
   const hasSelectedChat = selectedChat && selectedChat?.content.length > 0
 
@@ -68,17 +68,19 @@ export const Chat = ({ ...props }) => {
   const { mutate, isLoading } = useMutation({
     mutationKey: 'prompt',
     mutationFn: async (prompt) => {
+      const messagesInEnglish = await translateText(JSON.stringify({
+        messages: [...selectedChat.content, {
+          'role': 'user',
+          'content': prompt
+        }]
+      }), 'si', 'en')
+
       const response = await fetch('/api/v1/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          role: 'user',
-          content: prompt,
-          conversationId,
-          parentMessageId,
-        }),
+        body: messagesInEnglish,
       })
 
       if (response.status === 404) {
@@ -103,8 +105,8 @@ export const Chat = ({ ...props }) => {
       const promptInSinhala = await translateText(prompt, 'auto', 'si')
       prompt = await translateText(prompt, 'auto', 'en')
       addMessage(selectedId, {
-        emitter: 'user',
-        message: promptInSinhala,
+        role: 'user',
+        content: promptInSinhala,
       })
 
       mutate(prompt, {
@@ -113,6 +115,7 @@ export const Chat = ({ ...props }) => {
           const decoder = new TextDecoder()
 
           let messageExist = false
+          let fullContent = ''
           while (true) {
             const { done, value } = await reader.read()
             if (done) {
@@ -120,38 +123,38 @@ export const Chat = ({ ...props }) => {
             }
 
             const decodedText = decoder.decode(value)
-            const textLines = decodedText.trim().split('\n')
-            const textChunk = textLines[textLines.length - 1]
-            const jsonString = textChunk.replace(/^data:/, '')
+            const textLines = decodedText.trim().split('\n\n')
             try {
-              const responseJson = JSON.parse(jsonString)
-              const message = await translateText(
-                responseJson.message.content.parts[0],
+              const jsonChunks = textLines.map((line) => JSON.parse(line.trim().slice(6)))
+              let content = ''
+              jsonChunks.forEach(jsonChunk => {
+                if (jsonChunk.choices[0].delta && jsonChunk.choices[0].delta.content) {
+                  content+=jsonChunk.choices[0].delta.content
+                }
+              })
+
+              fullContent+=content
+              const fullContentInSinhala = await translateText(
+                fullContent,
                 'auto',
                 'si'
               )
               if (!messageExist) {
                 addMessage(selectedId, {
-                  emitter: 'gpt',
-                  message,
+                  role: 'assistant',
+                  content: fullContentInSinhala,
                 })
                 messageExist = true
               } else {
                 editLastMessage(selectedId, {
-                  emitter: 'gpt',
-                  message,
+                  role: 'assistant',
+                  content: fullContentInSinhala,
                 })
               }
 
-              if (conversationId == undefined || parentMessageId == undefined) {
-                initiateThread(selectedId, {
-                  conversationId: responseJson.conversation_id,
-                  parentMessageId: responseJson.message.id,
-                })
-              }
             } catch (error) {
               console.log('decodedText', decodedText)
-              console.log('jsonString', jsonString)
+              console.log('textLines', textLines)
               console.log('error', error)
             }
           }
@@ -162,8 +165,8 @@ export const Chat = ({ ...props }) => {
         },
         onError(error) {
           addMessage(selectedId, {
-            emitter: 'error',
-            message: error.message,
+            role: 'error',
+            content: error.message,
           })
           console.log('unexpected', error)
           updateScroll()
@@ -193,10 +196,10 @@ export const Chat = ({ ...props }) => {
         >
           <Stack spacing={2} padding={2} ref={parentRef} height='full'>
             {hasSelectedChat ? (
-              selectedChat.content.map(({ emitter, message }, key) => {
+              selectedChat.content.map(({ role, content }, key) => {
                 const getAvatar = () => {
-                  switch (emitter) {
-                    case 'gpt':
+                  switch (role) {
+                    case 'assistant':
                       return gptAvatar
                     case 'error':
                       return warning
@@ -206,11 +209,11 @@ export const Chat = ({ ...props }) => {
                 }
 
                 const getMessage = () => {
-                  if (message.slice(0, 2) == '\n\n') {
-                    return message.slice(2, Infinity)
+                  if (content.slice(0, 2) == '\n\n') {
+                    return content.slice(2, Infinity)
                   }
 
-                  return message
+                  return content
                 }
 
                 return (
@@ -220,11 +223,11 @@ export const Chat = ({ ...props }) => {
                     padding={4}
                     rounded={8}
                     backgroundColor={
-                      emitter == 'gpt' ? 'blackAlpha.200' : 'transparent'
+                      role == 'assistant' ? 'blackAlpha.200' : 'transparent'
                     }
                     spacing={4}
                   >
-                    <Avatar name={emitter} src={getAvatar()} />
+                    <Avatar name={role} src={getAvatar()} />
                     <div
                       style={{
                         whiteSpace: 'pre-wrap',

@@ -24,18 +24,16 @@ if (process.env.NODE_ENV !== 'Production') {
 
 // routes
 app.post('/api/v1/chat', async (req, res) => {
-  const { conversationId, parentMessageId, content: message } = req.body
+  const { messages } = req.body
 
-  if (!message) {
+  if (!messages) {
     res.sendStatus(400)
   }
 
+  // console.log(messages)
+
   try {
-    const response = await sendPostRequest({
-      prompt: message,
-      conversationId,
-      parentMessageId,
-    })
+    const response = await sendPostRequest({ messages })
 
     const reader = response.body.getReader()
     let lastChunk = new Uint8Array()

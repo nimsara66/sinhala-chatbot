@@ -3,43 +3,35 @@ import crypto from 'crypto'
 import dotenv from 'dotenv'
 dotenv.config()
 
-const API_ENDPOINT = 'https://chat.openai.com/backend-api/conversation'
+const API_ENDPOINT = 'https://api.openai.com/v1/chat/completions'
 const HEADERS = {
   'Content-Type': 'application/json',
-  Accept: 'text/event-stream',
-  cookie: process.env.CHATGPT_COOKIES,
-  Authorization: process.env.CHATGPT_AUTH_TOKEN,
+  // Accept: 'text/event-stream',
+  // cookie: process.env.CHATGPT_COOKIES,
+  Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
 }
 
 export const sendPostRequest = async (options = {}, header = {}) => {
   const {
-    parentMessageId = crypto.randomUUID(),
-    conversationId,
-    prompt = 'hello world',
+    messages = [{
+      role: 'user',
+      content: 'hello'
+    }],
     model = 'Default',
   } = options
   const modelId = getModelId(model)
 
   try {
-    const messageId = crypto.randomUUID()
+    // const messageId = crypto.randomUUID()
     const response = await fetch(API_ENDPOINT, {
       method: 'POST',
       headers: Object.assign(Object.assign({}, HEADERS), header),
       body: JSON.stringify({
-        action: 'next',
-        messages: [
-          {
-            id: messageId,
-            role: 'user',
-            content: {
-              content_type: 'text',
-              parts: [prompt],
-            },
-          },
-        ],
-        parent_message_id: parentMessageId,
-        conversation_id: conversationId,
+        messages,
+        temperature: parseFloat(process.env.TEMPERATURE),
+        max_tokens: parseInt(process.env.MAX_TOKENS),
         model: modelId,
+        stream: true
       }),
     })
 
@@ -66,8 +58,8 @@ export const sendPostRequest = async (options = {}, header = {}) => {
 }
 
 const MODEL_ID_MAP = {
-  Legacy: 'text-davinci-002-render-paid',
-  Default: 'text-davinci-002-render-sha',
+  // Legacy: 'text-davinci-002-render-paid',
+  Default: 'gpt-3.5-turbo',
 }
 
 const getModelId = (model) => {

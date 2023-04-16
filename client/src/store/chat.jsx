@@ -17,12 +17,12 @@ const initialChatState = getSafeSavedChats() || [
     role: 'මෙම වෙබ් අඩවිය ගැන',
     content: [
       {
-        emitter: "user",
-        message: "මෙම වෙබ් අඩවිය කුමක් සඳහාද?"
+        role: "user",
+        content: "මෙම වෙබ් අඩවිය කුමක් සඳහාද?"
       },
       {
-        emitter: "gpt",
-        message: "මෙම වෙබ් අඩවිය @nimsara66 විසින් නිර්මාණය කරන ලද සිංහල භාෂා වෙබ් අඩවි අතුරුමුහුණතෙහි ChatGPT කෘතිම බුද්ධියේ අනුකලනයකි.\n\nඅපගේ කෘත්‍රිම බුද්ධියෙන් ක්‍රියාත්මක වන චැට්බෝටා සමග සිංහලෙන් කතාබස් කිරීමේ පහසුව අත්විඳින්න."
+        role: "assistant",
+        content: "මෙම වෙබ් අඩවිය @nimsara66 විසින් නිර්මාණය කරන ලද සිංහල භාෂා වෙබ් අඩවි අතුරුමුහුණතෙහි ChatGPT කෘතිම බුද්ධියේ අනුකලනයකි.\n\nඅපගේ කෘත්‍රිම බුද්ධියෙන් ක්‍රියාත්මක වන චැට්බෝටා සමග සිංහලෙන් කතාබස් කිරීමේ පහසුව අත්විඳින්න."
       }
     ]
   },
@@ -31,12 +31,12 @@ const initialChatState = getSafeSavedChats() || [
     role: 'මාව follow කරන්න 😉',
     content: [
       {
-        emitter: "user",
-        message: "Follow කරන්න මාව \nLinkedIn [@nimsara66](https://www.linkedin.com/in/nimsara66)\nMedium [nimsara66](https://medium.com/@nimsara66)\nGitHub [nimsara66](https://github.com/nimsara66)"
+        role: "user",
+        content: "Follow කරන්න මාව \nLinkedIn [@nimsara66](https://www.linkedin.com/in/nimsara66)\nMedium [nimsara66](https://medium.com/@nimsara66)\nGitHub [nimsara66](https://github.com/nimsara66)"
       },
       {
-        emitter: "gpt",
-        message: "ස්තුතියි!"
+        role: "assistant",
+        content: "ස්තුතියි!"
       }
     ]
   }
@@ -91,6 +91,19 @@ export const useChat = create((set, get) => ({
     if (selectedChat > -1) {
       const lastIndex = props['content'].length - 1
       props['content'][lastIndex] = action
+      chat[selectedChat] = { ...props }
+      return ({ chat, selectedChat: chat[selectedChat] });
+    }
+
+    return ({});
+  }),
+  appendToLastMessage: async (id, action) => set(({ chat }) => {
+    const selectedChat = chat.findIndex((query) => (query.id === id));
+    const props = chat[selectedChat];
+
+    if (selectedChat > -1) {
+      const lastIndex = props['content'].length - 1
+      props['content'][lastIndex].content += action.content
       chat[selectedChat] = { ...props }
       return ({ chat, selectedChat: chat[selectedChat] });
     }
