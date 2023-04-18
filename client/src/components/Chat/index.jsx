@@ -28,7 +28,8 @@ import {
   AlertDialogHeader,
   AlertDialogContent,
   AlertDialogOverlay,
-  Button
+  Button,
+  useMediaQuery
 } from '@chakra-ui/react'
 import ReactMarkdown from 'react-markdown'
 import { Instructions } from '../Layout/Instructions'
@@ -38,6 +39,8 @@ export const Chat = ({ ...props }) => {
   const cancelRef = useRef()
   const onClose = () => setIsOpen(false)
   const onOpen = () => setIsOpen(true)
+
+  const [isSmallHeightAndWidth] = useMediaQuery('(max-height: 932px) and (max-width: 430px)');
 
   const {
     selectedChat,
@@ -185,16 +188,15 @@ export const Chat = ({ ...props }) => {
 
   return (
     <>
-      <Stack width='full' height='full' spacing={10}>
+      <Stack width='full' height='full' justifyContent='space-between'>
         <Stack
           maxWidth='768px'
           width='full'
           marginX='auto'
-          height='85%'
           overflow='auto'
           ref={overflowRef}
         >
-          <Stack spacing={2} padding={2} ref={parentRef} height='full'>
+          <Stack ref={parentRef} height='full'>
             {hasSelectedChat ? (
               selectedChat.content.map(({ role, content }, key) => {
                 const getAvatar = () => {
@@ -291,13 +293,10 @@ export const Chat = ({ ...props }) => {
           </Stack>
         </Stack>
         <Stack
-          height='20%'
-          padding={8}
-          paddingTop={12}
+          padding={4}
           backgroundColor='blackAlpha.400'
           justifyContent='center'
           alignItems='center'
-          // overflow='hidden'
         >
           <Stack maxWidth='768px'>
             <Input
@@ -322,8 +321,7 @@ export const Chat = ({ ...props }) => {
             <Text textAlign='center' fontSize='sm' opacity={0.5}>
               &copy;nimsara66 පර්යේෂණ පෙරදසුන. 
               <br />එන්න හමුවන්න අපගේ Sinhala Chatbota - ඔබේ පළමු සහ අවසාන සිංහල AI සහකරු!
-              <br />ඔබේ ගනුදෙනුකරුවන් සමඟ සිංහල භාෂාවෙන් සන්නිවේදනය කර ඔබේ ව්‍යාපාර වර්ධනය වැඩි දියුණු කිරීමට ඔබට අවශ්‍යද? තවත් බලන්න එපා! Sinhala Chatbota උදවු කිරීමට මෙහි පැමිණ ඇත! 
-              ඔබගේ ප්‍රතිපෝෂණය අපට වැඩිදියුණු කිරීමට උපකාරී වනු ඇත.
+              <br />{!isSmallHeightAndWidth && `ඔබේ ගනුදෙනුකරුවන් සමඟ සිංහල භාෂාවෙන් සන්නිවේදනය කර ඔබේ ව්‍යාපාර වර්ධනය වැඩි දියුණු කිරීමට ඔබට අවශ්‍යද? තවත් බලන්න එපා! Sinhala Chatbota උදවු කිරීමට මෙහි පැමිණ ඇත!`}
             </Text>
           </Stack>
         </Stack>
