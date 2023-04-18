@@ -185,7 +185,7 @@ export const Chat = ({ ...props }) => {
 
   return (
     <>
-      <Stack width='full' height='full'>
+      <Stack width='full' height='full' spacing={10}>
         <Stack
           maxWidth='768px'
           width='full'
@@ -292,11 +292,12 @@ export const Chat = ({ ...props }) => {
         </Stack>
         <Stack
           height='20%'
-          padding={4}
+          padding={8}
+          paddingTop={12}
           backgroundColor='blackAlpha.400'
           justifyContent='center'
           alignItems='center'
-          overflow='hidden'
+          // overflow='hidden'
         >
           <Stack maxWidth='768px'>
             <Input
@@ -319,8 +320,9 @@ export const Chat = ({ ...props }) => {
               }}
             />
             <Text textAlign='center' fontSize='sm' opacity={0.5}>
-              &copy;nimsara66 පර්යේෂණ පෙරදසුන. එන්න හමුවන්න අපගේ Sinhala Chatbota - ඔබේ පළමු සහ අවසාන සිංහල AI සහකරු!
-              ඔබේ ගනුදෙනුකරුවන් සමඟ සිංහල භාෂාවෙන් සන්නිවේදනය කර ඔබේ ව්‍යාපාර වර්ධනය වැඩි දියුණු කිරීමට ඔබට අවශ්‍යද? තවත් බලන්න එපා! Sinhala Chatbota උදවු කිරීමට මෙහි පැමිණ ඇත! 
+              &copy;nimsara66 පර්යේෂණ පෙරදසුන. 
+              <br />එන්න හමුවන්න අපගේ Sinhala Chatbota - ඔබේ පළමු සහ අවසාන සිංහල AI සහකරු!
+              <br />ඔබේ ගනුදෙනුකරුවන් සමඟ සිංහල භාෂාවෙන් සන්නිවේදනය කර ඔබේ ව්‍යාපාර වර්ධනය වැඩි දියුණු කිරීමට ඔබට අවශ්‍යද? තවත් බලන්න එපා! Sinhala Chatbota උදවු කිරීමට මෙහි පැමිණ ඇත! 
               ඔබගේ ප්‍රතිපෝෂණය අපට වැඩිදියුණු කිරීමට උපකාරී වනු ඇත.
             </Text>
           </Stack>
