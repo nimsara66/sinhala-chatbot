@@ -29,7 +29,7 @@ import {
   AlertDialogContent,
   AlertDialogOverlay,
   Button,
-  useMediaQuery
+  useMediaQuery,
 } from '@chakra-ui/react'
 import ReactMarkdown from 'react-markdown'
 import { Instructions } from '../Layout/Instructions'
@@ -40,7 +40,9 @@ export const Chat = ({ ...props }) => {
   const onClose = () => setIsOpen(false)
   const onOpen = () => setIsOpen(true)
 
-  const [isSmallHeightAndWidth] = useMediaQuery('(max-height: 932px) and (max-width: 430px)');
+  const [isSmallHeightAndWidth] = useMediaQuery(
+    '(max-height: 932px) and (max-width: 430px)'
+  )
 
   const {
     selectedChat,
@@ -53,8 +55,6 @@ export const Chat = ({ ...props }) => {
   } = useChat()
   const selectedId = selectedChat?.id,
     selectedRole = selectedChat?.role
-    // conversationId = selectedChat?.conversationId,
-    // parentMessageId = selectedChat?.parentMessageId
 
   const hasSelectedChat = selectedChat && selectedChat?.content.length > 0
 
@@ -71,28 +71,50 @@ export const Chat = ({ ...props }) => {
   const { mutate, isLoading } = useMutation({
     mutationKey: 'prompt',
     mutationFn: async (prompt) => {
-      const messagesInEnglish = await translateText(JSON.stringify({
-        messages: [...selectedChat.content, {
-          'role': 'user',
-          'content': prompt
-        }]
-      }), 'si', 'en')
+      const processedMessages = await Promise.all(
+        [
+          ...selectedChat.content,
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ].map(async (message) => {
+          const messageInEnglish = await translateText(
+            message.content,
+            'si',
+            'en'
+          )
+          if (message.role === 'user' || message.role === 'assistant') {
+            return { role: message.role, content: messageInEnglish }
+          } else {
+            return { role: 'assistant', content: messageInEnglish }
+          }
+        })
+      )
 
       const response = await fetch('/api/v1/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: messagesInEnglish,
+        body: JSON.stringify({ messages: processedMessages }),
       })
 
       if (response.status === 404) {
         onOpen()
         removeChat({ id: selectedId })
         addChat()
+      } else if (response.status === 400) {
+        throw new Error(
+          'ඔබ ඇතුළු කළ දෙයෙහි යම් වරදක්. 🫠'
+        )
+      } else if (response.status === 413) {
+        throw new Error(
+          'නොමිලේ සේවාව ලබා දෙන බැවින් මම පිළිතුර දෙන්නේ අකුරු 500 කට අඩු පණිවුඩ සදහා පමණි. 🥲'
+        )
       } else if (!response.ok) {
         throw new Error(
-          'Failed to send message 🤕! Please try again in a few minutes. 🫣'
+          'පණිවිඩය යැවීමට අසමත් විය 🤕! කරුණාකර මිනිත්තු කිහිපයකින් නැවත උත්සාහ කරන්න. 🫣'
         )
       }
 
@@ -105,8 +127,8 @@ export const Chat = ({ ...props }) => {
     const sendRequest = async (selectedId) => {
       setValue('input', '')
 
-      const promptInSinhala = await translateText(prompt, 'auto', 'si')
-      prompt = await translateText(prompt, 'auto', 'en')
+      const promptInSinhala = await translateText(prompt, 'en', 'si')
+      prompt = await translateText(prompt, 'si', 'en')
       addMessage(selectedId, {
         role: 'user',
         content: promptInSinhala,
@@ -128,18 +150,23 @@ export const Chat = ({ ...props }) => {
             const decodedText = decoder.decode(value)
             const textLines = decodedText.trim().split('\n\n')
             try {
-              const jsonChunks = textLines.map((line) => JSON.parse(line.trim().slice(6)))
+              const jsonChunks = textLines.map((line) =>
+                JSON.parse(line.trim().slice(6))
+              )
               let content = ''
-              jsonChunks.forEach(jsonChunk => {
-                if (jsonChunk.choices[0].delta && jsonChunk.choices[0].delta.content) {
-                  content+=jsonChunk.choices[0].delta.content
+              jsonChunks.forEach((jsonChunk) => {
+                if (
+                  jsonChunk.choices[0].delta &&
+                  jsonChunk.choices[0].delta.content
+                ) {
+                  content += jsonChunk.choices[0].delta.content
                 }
               })
 
-              fullContent+=content
+              fullContent += content
               const fullContentInSinhala = await translateText(
                 fullContent,
-                'auto',
+                'en',
                 'si'
               )
               if (!messageExist) {
@@ -154,7 +181,6 @@ export const Chat = ({ ...props }) => {
                   content: fullContentInSinhala,
                 })
               }
-
             } catch (error) {
               console.log('decodedText', decodedText)
               console.log('textLines', textLines)
@@ -271,11 +297,7 @@ export const Chat = ({ ...props }) => {
                                   />
                                 </Flex>
                                 <Box p='4' overflowY='auto'>
-                                  <pre
-                                    ref={codeRef}
-                                  >
-                                    {children}
-                                  </pre>
+                                  <pre ref={codeRef}>{children}</pre>
                                 </Box>
                               </Box>
                             )
@@ -319,14 +341,22 @@ export const Chat = ({ ...props }) => {
               }}
             />
             <Text textAlign='center' fontSize='sm' opacity={0.5}>
-              &copy;nimsara66 පර්යේෂණ පෙරදසුන. 
-              <br />එන්න හමුවන්න අපගේ Sinhala Chatbota - ඔබේ පළමු සහ අවසාන සිංහල AI සහකරු!
-              <br />{!isSmallHeightAndWidth && `ඔබේ ගනුදෙනුකරුවන් සමඟ සිංහල භාෂාවෙන් සන්නිවේදනය කර ඔබේ ව්‍යාපාර වර්ධනය වැඩි දියුණු කිරීමට ඔබට අවශ්‍යද? තවත් බලන්න එපා! Sinhala Chatbota උදවු කිරීමට මෙහි පැමිණ ඇත!`}
+              &copy;nimsara66 පර්යේෂණ පෙරදසුන.
+              <br />
+              එන්න හමුවන්න අපගේ Sinhala Chatbota - ඔබේ පළමු සහ අවසාන සිංහල AI
+              සහකරු!
+              <br />
+              {!isSmallHeightAndWidth &&
+                `ඔබේ ගනුදෙනුකරුවන් සමඟ සිංහල භාෂාවෙන් සන්නිවේදනය කර ඔබේ ව්‍යාපාර වර්ධනය වැඩි දියුණු කිරීමට ඔබට අවශ්‍යද? තවත් බලන්න එපා! Sinhala Chatbota උදවු කිරීමට මෙහි පැමිණ ඇත!`}
             </Text>
           </Stack>
         </Stack>
       </Stack>
-      <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
+      <AlertDialog
+        isOpen={isOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={onClose}
+      >
         <AlertDialogOverlay>
           <AlertDialogContent>
             <AlertDialogHeader>Error</AlertDialogHeader>

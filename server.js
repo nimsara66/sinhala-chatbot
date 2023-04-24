@@ -24,16 +24,45 @@ if (process.env.NODE_ENV !== 'Production') {
 
 // routes
 app.post('/api/v1/chat', async (req, res) => {
-  const { messages } = req.body
+  let { messages } = req.body
 
   if (!messages) {
     res.sendStatus(400)
+    return
   }
 
+  if (messages[messages.length - 1].content && messages[messages.length - 1].content.length > 500) {
+    res.sendStatus(413)
+    return
+  }
+
+  if (messages.length > 10) {
+    res.sendStatus(404)
+    return
+  }
+
+  const systemPrompt = {
+    role: 'system',
+    content:
+      'You are Sinhala Chatbota, a creative personal assistant. You thoroughly analyze user questions, even tricky ones, to provide concise and helpful responses.',
+  }
+
+  messages = [systemPrompt, ...messages]
+
   // console.log(messages)
+  // res.sendStatus(500)
+  // return
 
   try {
     const response = await sendPostRequest({ messages })
+
+    if (response.status != 200) {
+      const error = new Error(
+        `Request failed with status code ${response.status}`
+      )
+      error.status = response.status
+      throw error
+    }
 
     const reader = response.body.getReader()
     let lastChunk = new Uint8Array()
@@ -54,11 +83,7 @@ app.post('/api/v1/chat', async (req, res) => {
     }
     res.end()
   } catch (error) {
-    if (error.message.includes('404')) {
-      res.sendStatus(404)
-    } else {
-      res.sendStatus(error.status || 503)
-    }
+    res.sendStatus(error.status || 500)
   }
 })
 

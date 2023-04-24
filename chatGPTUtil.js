@@ -1,13 +1,9 @@
-import crypto from 'crypto'
-
 import dotenv from 'dotenv'
 dotenv.config()
 
 const API_ENDPOINT = 'https://api.openai.com/v1/chat/completions'
 const HEADERS = {
   'Content-Type': 'application/json',
-  // Accept: 'text/event-stream',
-  // cookie: process.env.CHATGPT_COOKIES,
   Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
 }
 
@@ -22,7 +18,6 @@ export const sendPostRequest = async (options = {}, header = {}) => {
   const modelId = getModelId(model)
 
   try {
-    // const messageId = crypto.randomUUID()
     const response = await fetch(API_ENDPOINT, {
       method: 'POST',
       headers: Object.assign(Object.assign({}, HEADERS), header),
@@ -35,21 +30,6 @@ export const sendPostRequest = async (options = {}, header = {}) => {
       }),
     })
 
-    switch (response.status) {
-      case 200:
-        break
-      case 400:
-        throw new Error('Bad Request')
-      case 401:
-        throw new Error('Unauthorized')
-      default:
-        throw new Error(
-          `Request failed with status code ${
-            response.status
-          }: ${await response.text()}`
-        )
-    }
-
     return response
   } catch (error) {
     console.error('Error sending POST request to ChatGPT API:', error)
@@ -58,7 +38,7 @@ export const sendPostRequest = async (options = {}, header = {}) => {
 }
 
 const MODEL_ID_MAP = {
-  // Legacy: 'text-davinci-002-render-paid',
+  Legacy: 'gpt-3.5-turbo-0301',
   Default: 'gpt-3.5-turbo',
 }
 
