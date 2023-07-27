@@ -31,15 +31,15 @@ app.post('/api/v1/chat', async (req, res) => {
     return
   }
 
-  if (messages[messages.length - 1].content && messages[messages.length - 1].content.length > 500) {
-    res.sendStatus(413)
-    return
-  }
+  // if (messages[messages.length - 1].content && messages[messages.length - 1].content.length > 500) {
+  //   res.sendStatus(413)
+  //   return
+  // }
 
-  if (messages.length > 10) {
-    res.sendStatus(404)
-    return
-  }
+  // if (messages.length > 10) {
+  //   res.sendStatus(404)
+  //   return
+  // }
 
   const systemPrompt = {
     role: 'system',
