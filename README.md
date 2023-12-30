@@ -2,6 +2,15 @@
 
 ![](./assets/banner.webp)
 
+<h3 align="center" style="color: #333">Connect with me 🙂 <a href="https://www.nimsarafernando.com">Look me up! 🚀</a></h3>
+<p align="center" style="display: flex; align-items: center; justify-content: center;">
+<a href="https://linkedin.com/in/nimsara66" target="blank"><img align="center" src="https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/linked-in-alt.svg" alt="todo" height="40" width="40" /></a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="https://www.facebook.com/mihindukulasuria.fernando" target="blank"><img align="center" src="https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/facebook.svg" alt="todo" height="40" width="40" /></a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="https://instagram.com/nimsara_sudeepa" target="blank"><img align="center" src="https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/instagram.svg" alt="todo" height="40" width="40" /></a>
+</p>
+
 ## Introduction
 
 Welcome to Sinhala Chatbota, a revolutionary chatbot powered by the OpenAI Chat Competition API. This chatbot is designed to enhance customer experiences and improve productivity for businesses, especially those operating in Sri Lanka.
@@ -61,7 +70,7 @@ git clone https://github.com/nimsara66/sinhala-chatbot.git
 cd sinhala-chatbota
 npm install
 npm run start
-
+```
 
 ## Getting ChatGPT auth
 - [access token](https://chat.openai.com/api/auth/session)
